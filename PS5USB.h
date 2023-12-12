@@ -26,6 +26,7 @@
 
 #define PS5_VID         0x054C // Sony Corporation
 #define PS5_PID         0x0CE6 // PS5 Controller
+#define PS5_PID_AC      0x0E5F // PS5 Access Controller
 
 /**
  * This class implements support for the PS5 controller via USB.
@@ -47,7 +48,7 @@ public:
          * @return Returns true if it is connected.
          */
         bool connected() {
-                return HIDUniversal::isReady() && HIDUniversal::VID == PS5_VID && HIDUniversal::PID == PS5_PID;
+                return HIDUniversal::isReady() && VIDPIDOK(HIDUniversal::VID, HIDUniversal::PID);
         };
 
         /**
@@ -68,7 +69,7 @@ protected:
          * @param buf       Pointer to the data buffer.
          */
         virtual void ParseHIDData(USBHID *hid __attribute__((unused)), bool is_rpt_id __attribute__((unused)), uint8_t len, uint8_t *buf) {
-                if (HIDUniversal::VID == PS5_VID && HIDUniversal::PID == PS5_PID)
+                if (VIDPIDOK(HIDUniversal::VID, HIDUniversal::PID))
                         PS5Parser::Parse(len, buf);
         };
 
@@ -78,7 +79,7 @@ protected:
          * This is useful for instance if you want to set the LEDs in a specific way.
          */
         virtual uint8_t OnInitSuccessful() {
-                if (HIDUniversal::VID == PS5_VID && HIDUniversal::PID == PS5_PID) {
+                if (VIDPIDOK(HIDUniversal::VID, HIDUniversal::PID)) {
                         PS5Parser::Reset();
                         if (pFuncOnInit)
                                 pFuncOnInit(); // Call the user function
@@ -147,7 +148,7 @@ protected:
          * @return     Returns true if the device's VID and PID matches this driver.
          */
         virtual bool VIDPIDOK(uint16_t vid, uint16_t pid) {
-                return (vid == PS5_VID && pid == PS5_PID);
+                return (vid == PS5_VID && (pid == PS5_PID || pid == PS5_PID_AC));
         };
         /**@}*/
 
